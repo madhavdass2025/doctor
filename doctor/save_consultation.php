@@ -61,19 +61,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['save_finalize'])) {
         }
 
         // --- 5. Insert into `consultation_surgeries` ---
-        if (!empty($_POST['surgery_name'])) {
-            $sql_surg = "INSERT INTO consultation_surgeries (ConsultationID, SurgeryName, SurgeryNotes) VALUES (?, ?, ?)";
+        $surgery_id_to_save = !empty($_POST['surgery_id']) ? (int)$_POST['surgery_id'] : null;
+        $surgery_name_to_save = !empty($_POST['surgery_other_name']) ? trim($_POST['surgery_other_name']) : null;
+
+        // If a custom name is entered, it overrides the dropdown selection.
+        if ($surgery_name_to_save) {
+            $surgery_id_to_save = null;
+        }
+
+        // Only insert if we have either an ID or a custom name
+        if ($surgery_id_to_save || $surgery_name_to_save) {
+            $sql_surg = "INSERT INTO consultation_surgeries (ConsultationID, SurgeryID, SurgeryName, SurgeryNotes) VALUES (?, ?, ?, ?)";
             $stmt_surg = $conn->prepare($sql_surg);
-            $stmt_surg->bind_param("iss", $consultation_id, $_POST['surgery_name'], $_POST['surgery_notes']);
+            $stmt_surg->bind_param("iiss", $consultation_id, $surgery_id_to_save, $surgery_name_to_save, $_POST['surgery_notes']);
             $stmt_surg->execute();
             $stmt_surg->close();
         }
 
         // --- 6. Insert into `consultation_scans` ---
-        if (!empty($_POST['scan_name'])) {
-            $sql_scan = "INSERT INTO consultation_scans (ConsultationID, ScanName, ScanNotes) VALUES (?, ?, ?)";
+        $scan_id_to_save = !empty($_POST['scan_id']) ? (int)$_POST['scan_id'] : null;
+        $scan_name_to_save = !empty($_POST['scan_other_name']) ? trim($_POST['scan_other_name']) : null;
+
+        // If a custom name is entered, it overrides the dropdown selection.
+        if ($scan_name_to_save) {
+            $scan_id_to_save = null;
+        }
+
+        // Only insert if we have either an ID or a custom name
+        if ($scan_id_to_save || $scan_name_to_save) {
+            $sql_scan = "INSERT INTO consultation_scans (ConsultationID, ScanID, ScanName, ScanNotes) VALUES (?, ?, ?, ?)";
             $stmt_scan = $conn->prepare($sql_scan);
-            $stmt_scan->bind_param("iss", $consultation_id, $_POST['scan_name'], $_POST['scan_notes']);
+            $stmt_scan->bind_param("iiss", $consultation_id, $scan_id_to_save, $scan_name_to_save, $_POST['scan_notes']);
             $stmt_scan->execute();
             $stmt_scan->close();
         }

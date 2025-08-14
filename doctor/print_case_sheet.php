@@ -18,12 +18,61 @@ $main_info = $stmt_main->get_result()->fetch_assoc();
 $stmt_main->close();
 if (!$main_info) die("Consultation not found.");
 
-// 3. Fetch data from related tables
-$medicines = $conn->query("SELECT * FROM consultation_medicines WHERE ConsultationID = $consultation_id")->fetch_all(MYSQLI_ASSOC);
-$injections = $conn->query("SELECT * FROM consultation_injections WHERE ConsultationID = $consultation_id")->fetch_all(MYSQLI_ASSOC);
-$surgeries = $conn->query("SELECT * FROM consultation_surgeries WHERE ConsultationID = $consultation_id")->fetch_all(MYSQLI_ASSOC);
-$scans = $conn->query("SELECT * FROM consultation_scans WHERE ConsultationID = $consultation_id")->fetch_all(MYSQLI_ASSOC);
-$lab_tests = $conn->query("SELECT * FROM consultation_lab_tests WHERE ConsultationID = $consultation_id")->fetch_all(MYSQLI_ASSOC);
+// 3. Fetch data from related tables with JOINs
+// Medicines
+$sql_meds = "SELECT cm.*, m.name AS medicine_name
+             FROM consultation_medicines cm
+             LEFT JOIN medicines m ON cm.MedicineID = m.Mid
+             WHERE cm.ConsultationID = ?";
+$stmt_meds = $conn->prepare($sql_meds);
+$stmt_meds->bind_param("i", $consultation_id);
+$stmt_meds->execute();
+$medicines = $stmt_meds->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_meds->close();
+
+// Injections
+$sql_injs = "SELECT ci.*, v.name AS vaccine_name
+             FROM consultation_injections ci
+             LEFT JOIN vaccination v ON ci.VaccinationID = v.VId
+             WHERE ci.ConsultationID = ?";
+$stmt_injs = $conn->prepare($sql_injs);
+$stmt_injs->bind_param("i", $consultation_id);
+$stmt_injs->execute();
+$injections = $stmt_injs->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_injs->close();
+
+// Surgeries
+$sql_surgs = "SELECT cs.*, s.surName AS surgery_name
+              FROM consultation_surgeries cs
+              LEFT JOIN surgery s ON cs.SurgeryID = s.surgeryID
+              WHERE cs.ConsultationID = ?";
+$stmt_surgs = $conn->prepare($sql_surgs);
+$stmt_surgs->bind_param("i", $consultation_id);
+$stmt_surgs->execute();
+$surgeries = $stmt_surgs->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_surgs->close();
+
+// Scans
+$sql_scans = "SELECT csc.*, s.scanName AS scan_name
+              FROM consultation_scans csc
+              LEFT JOIN scan s ON csc.ScanID = s.sID
+              WHERE csc.ConsultationID = ?";
+$stmt_scans = $conn->prepare($sql_scans);
+$stmt_scans->bind_param("i", $consultation_id);
+$stmt_scans->execute();
+$scans = $stmt_scans->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_scans->close();
+
+// Lab Tests
+$sql_labs = "SELECT clt.*, l.name AS test_name
+             FROM consultation_lab_tests clt
+             LEFT JOIN laboratory l ON clt.LabTestID = l.Lid
+             WHERE clt.ConsultationID = ?";
+$stmt_labs = $conn->prepare($sql_labs);
+$stmt_labs->bind_param("i", $consultation_id);
+$stmt_labs->execute();
+$lab_tests = $stmt_labs->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_labs->close();
 
 $conn->close();
 ?>
@@ -86,7 +135,7 @@ $conn->close();
             <tbody>
             <?php foreach($medicines as $med): ?>
                 <tr>
-                    <td><?= htmlspecialchars($med['OtherMedicineName'] ?: 'N/A') ?></td>
+                    <td><?= htmlspecialchars($med['OtherMedicineName'] ?: ($med['medicine_name'] ?? 'N/A')) ?></td>
                     <td><?= htmlspecialchars($med['Dosage']) ?></td>
                     <td><?= htmlspecialchars($med['Frequency']) ?></td>
                     <td><?= htmlspecialchars($med['TotalUnits']) ?></td>
@@ -105,7 +154,7 @@ $conn->close();
             <tbody>
             <?php foreach($injections as $inj): ?>
                 <tr>
-                    <td><?= htmlspecialchars($inj['InjectionName']) ?></td>
+                    <td><?= htmlspecialchars($inj['InjectionName'] ?: ($inj['vaccine_name'] ?? 'N/A')) ?></td>
                     <td><?= htmlspecialchars($inj['Dosage']) ?></td>
                 </tr>
             <?php endforeach; ?>
@@ -116,7 +165,7 @@ $conn->close();
         <?php if (!empty($surgeries)): ?>
         <h3>Surgery/Procedures</h3>
         <?php foreach($surgeries as $surg): ?>
-            <p><strong>Procedure:</strong> <?= htmlspecialchars($surg['SurgeryName']) ?></p>
+            <p><strong>Procedure:</strong> <?= htmlspecialchars($surg['SurgeryName'] ?: ($surg['surgery_name'] ?? 'N/A')) ?></p>
             <div><strong>Notes:</strong> <p><?= nl2br(htmlspecialchars($surg['SurgeryNotes'])) ?></p></div>
         <?php endforeach; ?>
         <?php endif; ?>
@@ -124,7 +173,7 @@ $conn->close();
         <?php if (!empty($scans)): ?>
         <h3>Scans</h3>
         <?php foreach($scans as $scan): ?>
-            <p><strong>Scan:</strong> <?= htmlspecialchars($scan['ScanName']) ?></p>
+            <p><strong>Scan:</strong> <?= htmlspecialchars($scan['ScanName'] ?: ($scan['scan_name'] ?? 'N/A')) ?></p>
             <div><strong>Notes:</strong> <p><?= nl2br(htmlspecialchars($scan['ScanNotes'])) ?></p></div>
         <?php endforeach; ?>
         <?php endif; ?>
@@ -136,7 +185,7 @@ $conn->close();
             <tbody>
             <?php foreach($lab_tests as $test): ?>
                 <tr>
-                    <td><?= htmlspecialchars($test['CustomTestName'] ?: 'N/A') ?></td>
+                    <td><?= htmlspecialchars($test['CustomTestName'] ?: ($test['test_name'] ?? 'N/A')) ?></td>
                     <td><?= htmlspecialchars($test['Instructions']) ?></td>
                 </tr>
             <?php endforeach; ?>

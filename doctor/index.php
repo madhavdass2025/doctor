@@ -37,7 +37,7 @@ $stmt = $conn->prepare($sql);
 
 if (!empty($search_query)) {
     $search_param = "%" . $search_query . "%";
-    $stmt->bind_param("isss", $doctor_id, $search_param, $search_param);
+    $stmt->bind_param("iss", $doctor_id, $search_param, $search_param);
 } else {
     $stmt->bind_param("i", $doctor_id);
 }
