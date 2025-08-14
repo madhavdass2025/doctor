@@ -1,0 +1,115 @@
+/* --- Global App Layout Styles --- */
+:root {
+    --primary-color: #007bff;
+    --dark-color: #343a40;
+    --light-color: #f8f9fa;
+    --sidebar-width: 240px;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--light-color);
+    margin: 0;
+    font-size: 16px;
+}
+
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* --- Sidebar Navigation --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--dark-color);
+    color: #fff;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    text-align: center;
+    padding: 0 20px;
+    margin-bottom: 20px;
+}
+
+.sidebar-header h2 {
+    color: #fff;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.sidebar-nav {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.sidebar-nav li a {
+    display: block;
+    color: #ced4da;
+    padding: 12px 20px;
+    text-decoration: none;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar-nav li a:hover,
+.sidebar-nav li a.active {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.sidebar-footer {
+    padding: 20px;
+    text-align: center;
+}
+
+/* --- Main Content Area --- */
+.main-content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    display: flex;
+    flex-direction: column;
+}
+
+.main-header {
+    background-color: #fff;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.user-profile a {
+    color: var(--primary-color);
+    text-decoration: none;
+    margin-left: 20px;
+}
+
+.user-profile a:hover {
+    text-decoration: underline;
+}
+
+.page-content {
+    padding: 20px;
+    flex-grow: 1;
+}
+
+/* --- General Content Styles --- */
+.content-box {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+h1, h2, h3 {
+    color: #333;
+}
